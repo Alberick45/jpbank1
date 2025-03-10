@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'jpbankApp', #******************
+    'auth_custom'
 ]
 
-AUTH_USER_MODEL = 'jpbankApp.CoreUser'  #******************
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
