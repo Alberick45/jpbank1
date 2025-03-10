@@ -1,0 +1,86 @@
+/* Custom styles for JP Bank */
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    border: none;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.table th {
+    border-top: none;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+}
+
+/* Custom colors */
+.bg-primary {
+    background-color: #2563eb !important;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.dashboard-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Transaction badges */
+.badge.bg-success {
+    background-color: #10b981 !important;
+}
+
+.badge.bg-warning {
+    background-color: #f59e0b !important;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Responsive tables */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}

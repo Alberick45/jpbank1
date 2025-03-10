@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h1>Transactions</h1>
+        <a href="{{ url_for('new_transaction') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Transaction
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Account Number</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Created By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.tst_transaction_id }}</td>
+                        <td>{{ transaction.tst_account_number }}</td>
+                        <td>
+                            <span class="badge {% if transaction.tst_transaction_type == 'deposit' %}bg-success{% else %}bg-warning{% endif %}">
+                                {{ transaction.tst_transaction_type }}
+                            </span>
+                        </td>
+                        <td>${{ "%.2f"|format(transaction.tst_amount) }}</td>
+                        <td>{{ transaction.tst_created_on.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ transaction.tst_created_by_user_id }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

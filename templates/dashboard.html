@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Welcome, {{ current_user.usr_username }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                <div class="list-group">
+                    <a href="{{ url_for('new_transaction') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-exchange-alt me-2"></i> New Transaction
+                    </a>
+                    <a href="{{ url_for('customers') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i> View Customers
+                    </a>
+                    <a href="{{ url_for('transactions') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-history me-2"></i> Recent Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Recent Activity</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-activity">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Details{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('customers') }}">Customers</a></li>
+                <li class="breadcrumb-item active">{{ customer.cus_firstname }} {{ customer.cus_lastname }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Personal Information</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><strong>Full Name:</strong> {{ customer.cus_firstname }} {{ customer.cus_lastname }} {{ customer.cus_othernames }}</li>
+                    <li class="mb-2"><strong>Date of Birth:</strong> {{ customer.cus_dob.strftime('%B %d, %Y') }}</li>
+                    <li class="mb-2"><strong>Email:</strong> {{ customer.cus_email }}</li>
+                    <li class="mb-2"><strong>Phone:</strong> {{ customer.cus_phone_nos }}</li>
+                    <li class="mb-2"><strong>Occupation:</strong> {{ customer.cus_occupation }}</li>
+                    <li class="mb-2"><strong>Address:</strong> {{ customer.cus_address }}</li>
+                    <li class="mb-2"><strong>Loyalty Points:</strong> {{ customer.cus_loyalty_points or 0 }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Accounts</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Account Number</th>
+                                <th>Type</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in accounts %}
+                            <tr>
+                                <td>{{ account.acc_account_number }}</td>
+                                <td>{{ account.acc_account_type }}</td>
+                                <td>${{ "%.2f"|format(account.acc_balance) }}</td>
+                                <td>
+                                    <span class="badge {% if account.acc_status == 'active' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ account.acc_status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if kyc %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">KYC Information</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><strong>ID Type:</strong> {{ kyc.kyc_id_type }}</li>
+                    <li class="mb-2"><strong>ID Number:</strong> {{ kyc.kyc_id_number }}</li>
+                    {% if kyc.kyc_verified_at %}
+                    <li class="mb-2"><strong>Verified At:</strong> {{ kyc.kyc_verified_at.strftime('%B %d, %Y %H:%M') }}</li>
+                    {% endif %}
+                </ul>
+                {% if kyc.kyc_document_url %}
+                <a href="{{ kyc.kyc_document_url }}" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-file-alt me-2"></i> View Document
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
