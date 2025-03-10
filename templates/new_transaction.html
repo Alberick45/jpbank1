@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}New Transaction{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('transactions') }}">Transactions</a></li>
+                <li class="breadcrumb-item active">New Transaction</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">New Transaction</h2>
+                <form method="POST" id="transactionForm">
+                    <div class="mb-3">
+                        <label for="account_number" class="form-label">Account Number</label>
+                        <input type="number" class="form-control" id="account_number" name="account_number" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transaction_type" class="form-label">Transaction Type</label>
+                        <select class="form-select" id="transaction_type" name="transaction_type" required>
+                            <option value="">Select type...</option>
+                            <option value="deposit">Deposit</option>
+                            <option value="withdrawal">Withdrawal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>Process Transaction
+                        </button>
+                        <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('transactionForm').addEventListener('submit', function(e) {
+    if (!confirm('Are you sure you want to process this transaction?')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

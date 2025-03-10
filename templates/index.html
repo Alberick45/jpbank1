@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="row align-items-center min-vh-75">
+    <div class="col-md-6">
+        <h1 class="display-4 mb-4">Welcome to JP Bank</h1>
+        <p class="lead mb-4">Secure, reliable banking solutions for all your financial needs.</p>
+        {% if not current_user.is_authenticated %}
+        <div class="d-grid gap-2 d-md-flex">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Sign Up
+            </a>
+        </div>
+        {% else %}
+        <div class="d-grid gap-2 d-md-flex">
+            {% if current_user.role and current_user.role.role_name == 'Admin' %}
+            <a href="{{ url_for('admin_users') }}" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-users me-2"></i>Manage Users
+            </a>
+            <a href="{{ url_for('admin_roles') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-user-shield me-2"></i>Manage Roles
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 d-none d-md-block">
+        <img src="{{ url_for('static', filename='img/banking.svg') }}" alt="Banking illustration" class="img-fluid">
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">Secure Banking</h3>
+                <p class="card-text">State-of-the-art security measures to protect your financial data.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">24/7 Access</h3>
+                <p class="card-text">Access your accounts and perform transactions anytime, anywhere.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                <h3 class="card-title h5">Customer Support</h3>
+                <p class="card-text">Dedicated support team ready to assist you with any banking needs.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
