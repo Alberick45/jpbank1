@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}New Role{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_roles') }}">Roles</a></li>
+                <li class="breadcrumb-item active">New Role</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Create New Role</h2>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="role_name" class="form-label">Role Name</label>
+                        <input type="text" class="form-control" id="role_name" name="role_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role_sht_name" class="form-label">Short Name</label>
+                        <input type="text" class="form-control" id="role_sht_name" name="role_sht_name" maxlength="10" required>
+                        <div class="form-text">Maximum 10 characters</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Role
+                        </button>
+                        <a href="{{ url_for('admin_roles') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

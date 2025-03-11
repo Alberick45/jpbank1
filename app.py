@@ -7,9 +7,10 @@ import urllib
 from dotenv import load_dotenv
 from functools import wraps
 from urllib.parse import urlparse
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import scoped_session, sessionmaker
-from models import Base, TblUsers086, TblEmployees086, TblUserRoles086
+from decimal import Decimal
+from models import Base, TblUsers086, TblEmployees086, TblUserRoles086, TblCustomers086, TblAccountDetails086, TblTransactions086, TblSecurityLogs086
 
 load_dotenv()
 
@@ -168,6 +169,142 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
+# Teller Transaction Routes
+@app.route('/teller/transactions')
+@login_required
+@role_required('Teller')
+def teller_transactions():
+    transactions = db.query(TblTransactions086).all()
+    return render_template('transactions.html', transactions=transactions)
+
+@app.route('/teller/transaction/new', methods=['GET', 'POST'])
+@login_required
+@role_required('Teller')
+def new_transaction():
+    if request.method == 'POST':
+        account_number = request.form.get('account_number')
+        amount = request.form.get('amount')
+        transaction_type = request.form.get('transaction_type')
+
+        try:
+            # Convert amount to Decimal for precise handling
+            amount = Decimal(str(amount))
+            
+            # Validate account exists
+            account = db.query(TblAccountDetails086).get(account_number)
+            if not account:
+                flash('Account not found.', 'danger')
+                return redirect(url_for('new_transaction'))
+
+            # Convert account balance to Decimal for comparison
+            current_balance = Decimal(str(account.acc_balance))
+
+            # Validate sufficient funds for withdrawal
+            if transaction_type == 'withdrawal':
+                if amount > current_balance:
+                    flash('Insufficient funds.', 'danger')
+                    return redirect(url_for('new_transaction'))
+
+            # Create transaction record
+            transaction = TblTransactions086(
+                tst_account_number=account_number,
+                tst_amount=amount,
+                tst_transaction_type=transaction_type,
+                tst_created_by_user_id=current_user.usr_idpk
+            )
+            db.add(transaction)
+
+            # Update account balance using Decimal arithmetic
+            if transaction_type == 'deposit':
+                account.acc_balance = current_balance + amount
+            else:  # withdrawal
+                account.acc_balance = current_balance - amount
+
+            # Log the security event
+            security_log = TblSecurityLogs086(
+                log_customer_account_number=account_number,
+                log_employee_id=current_user.usr_empidfk,
+                log_action=f"{transaction_type.capitalize()} of ${amount:.2f}",
+                log_ip_address=request.remote_addr,
+                log_device_info=request.user_agent.string,
+                log_timestamp=datetime.utcnow(),
+                success=1
+            )
+            db.add(security_log)
+
+            db.commit()
+            flash(f'{transaction_type.capitalize()} of ${amount:.2f} completed successfully.', 'success')
+            return redirect(url_for('teller_transactions'))
+
+        except ValueError:
+            db.rollback()
+            flash('Invalid amount format. Please enter a valid number.', 'danger')
+            return redirect(url_for('new_transaction'))
+        except Exception as e:
+            db.rollback()
+            flash('Error processing transaction. Please try again.', 'danger')
+            return redirect(url_for('new_transaction'))
+
+    return render_template('new_transaction.html')
+
+@app.route('/teller/account/<int:account_number>')
+@login_required
+@role_required('Teller')
+def account_details(account_number):
+    account = db.query(TblAccountDetails086).filter_by(acc_account_number=account_number).first()
+    if not account:
+        flash('Account not found.', 'danger')
+        return redirect(url_for('teller_transactions'))
+    
+    transactions = db.query(TblTransactions086).filter_by(tst_account_number=account_number).order_by(desc(TblTransactions086.tst_created_on)).all()
+    return render_template('teller/account_details.html', account=account, transactions=transactions)
+
+# Teller Account Management Routes
+@app.route('/teller/accounts')
+@login_required
+@role_required('Teller')
+def customer_accounts():
+    accounts = db.query(TblAccountDetails086)\
+        .join(TblCustomers086)\
+        .add_columns(
+            TblCustomers086.cus_firstname,
+            TblCustomers086.cus_lastname,
+            TblCustomers086.cus_email,
+            TblAccountDetails086.acc_account_number,
+            TblAccountDetails086.acc_account_type,
+            TblAccountDetails086.acc_balance
+        ).all()
+    
+    return render_template('teller/accounts.html', accounts=accounts)
+
+@app.route('/teller/account/<int:account_number>')
+@login_required
+@role_required('Teller')
+def account_details_teller(account_number):
+    # Get account details with customer information
+    account = db.query(TblAccountDetails086)\
+        .join(TblCustomers086)\
+        .filter(TblAccountDetails086.acc_account_number == account_number)\
+        .add_columns(
+            TblCustomers086.cus_firstname,
+            TblCustomers086.cus_lastname,
+            TblCustomers086.cus_email,
+            TblCustomers086.cus_phone_nos,
+            TblAccountDetails086.acc_account_number,
+            TblAccountDetails086.acc_account_type,
+            TblAccountDetails086.acc_balance
+        ).first_or_404()
+    
+    # Get recent transactions for this account
+    transactions = db.query(TblTransactions086)\
+        .filter_by(tst_account_number=account_number)\
+        .order_by(desc(TblTransactions086.tst_created_on))\
+        .limit(10)\
+        .all()
+    
+    return render_template('teller/account_details.html', account=account, transactions=transactions)
+
+# Admin User Management Routes
 @app.route('/admin/users')
 @login_required
 @admin_required
@@ -175,12 +312,142 @@ def admin_users():
     users = db.query(TblUsers086).all()
     return render_template('admin/users.html', users=users)
 
+@app.route('/admin/user/edit/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    user = db.query(TblUsers086).filter_by(usr_idpk=user_id).first()
+    if not user:
+        abort(404)
+        
+    if request.method == 'POST':
+        try:
+            user.usr_username = request.form['username']
+            user.usr_roleidfk = int(request.form['role'])
+            user.usr_empidfk = int(request.form['employee'])
+            
+            if request.form.get('password'):
+                user.usr_password = generate_password_hash(request.form['password'])
+                
+            db.commit()
+            flash('User updated successfully.', 'success')
+            return redirect(url_for('admin_users'))
+        except Exception as e:
+            db.rollback()
+            flash('Error updating user. Please try again.', 'danger')
+            
+    roles = db.query(TblUserRoles086).all()
+    employees = db.query(TblEmployees086).all()
+    return render_template('admin/edit_user.html', user=user, roles=roles, employees=employees)
+
+@app.route('/admin/user/toggle/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def toggle_user(user_id):
+    user = db.query(TblUsers086).filter_by(usr_idpk=user_id).first()
+    if not user:
+        abort(404)
+        
+    try:
+        user.usr_is_active = not user.usr_is_active
+        db.commit()
+        status = "activated" if user.usr_is_active else "deactivated"
+        flash(f'User {status} successfully.', 'success')
+    except Exception as e:
+        db.rollback()
+        flash('Error toggling user status. Please try again.', 'danger')
+        
+    return redirect(url_for('admin_users'))
+
+# Admin Role Management Routes
 @app.route('/admin/roles')
 @login_required
 @admin_required
 def admin_roles():
     roles = db.query(TblUserRoles086).all()
     return render_template('admin/roles.html', roles=roles)
+
+@app.route('/admin/role/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def new_role():
+    if request.method == 'POST':
+        new_role = TblUserRoles086(
+            role_name=request.form['role_name'],
+            role_sht_name=request.form['role_sht_name'],
+            role_created_date=datetime.utcnow()
+        )
+        db.session.add(new_role)
+        db.session.commit()
+        flash('New role created successfully', 'success')
+        return redirect(url_for('roles'))
+    return render_template('admin/new_role.html')
+
+@app.route('/admin/role/edit/<int:role_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_role():
+    role = TblUserRoles086.query.get_or_404(role_id)
+    if request.method == 'POST':
+        role.role_name = request.form['role_name']
+        role.role_sht_name = request.form['role_sht_name']
+        role.role_edited_date = datetime.utcnow()
+        db.session.commit()
+        flash('Role updated successfully', 'success')
+        return redirect(url_for('roles'))
+    return render_template('admin/edit_role.html', role=role)
+
+@app.route('/profile')
+@login_required
+def profile():
+    user = User.query.get(current_user.usr_idpk)
+    employee = None
+    if user.usr_empidfk:
+        employee = TblEmployees086.query.get(user.usr_empidfk)
+    return render_template('profile.html', user=user, employee=employee)
+
+
+@app.route('/admin/role/delete/<int:role_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_role(role_id):
+    role = db.query(TblUserRoles086).filter_by(role_id=role_id).first()
+    if not role:
+        abort(404)
+    
+    # Prevent deletion of core roles
+    if role.role_name in ['Admin', 'Teller']:
+        flash('Cannot delete core system roles.', 'danger')
+        return redirect(url_for('admin_roles'))
+    
+    try:
+        # Check if role is assigned to any users
+        users_with_role = db.query(TblUsers086).filter_by(usr_roleidfk=role_id).count()
+        if users_with_role > 0:
+            flash('Cannot delete role that is assigned to users. Please reassign users first.', 'danger')
+            return redirect(url_for('admin_roles'))
+        
+        # Log the deletion
+        security_log = TblSecurityLogs086(
+            log_employee_id=current_user.usr_empidfk,
+            log_action=f"Deleted role: {role.role_name}",
+            log_ip_address=request.remote_addr,
+            log_device_info=request.user_agent.string,
+            log_timestamp=datetime.utcnow(),
+            success=1
+        )
+        db.add(security_log)
+        
+        # Delete the role
+        db.delete(role)
+        db.commit()
+        
+        flash('Role deleted successfully.', 'success')
+    except Exception as e:
+        db.rollback()
+        flash('Error deleting role. Please try again.', 'danger')
+    
+    return redirect(url_for('admin_roles'))
 
 if __name__ == '__main__':
     # Create default roles if they don't exist

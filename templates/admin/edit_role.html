@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Role</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="role_name" class="form-label">Role Name</label>
+            <input type="text" class="form-control" id="role_name" name="role_name" value="{{ role.role_name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="role_sht_name" class="form-label">Short Name</label>
+            <input type="text" class="form-control" id="role_sht_name" name="role_sht_name" value="{{ role.role_sht_name }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Role</button>
+        <a href="{{ url_for('roles') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+
+<!-- {% extends "base.html" %}
+
+{% block title %}Edit Role{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_roles') }}">Roles</a></li>
+                    <li class="breadcrumb-item active">Edit Role</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-tag me-2"></i>Edit Role
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="role_name" class="form-label">Role Name</label>
+                            <input type="text" class="form-control" id="role_name" name="role_name" 
+                                   value="{{ role.role_name }}" required {% if role.role_name in ['Admin', 'Teller'] %}readonly{% endif %}>
+                            {% if role.role_name in ['Admin', 'Teller'] %}
+                            <small class="text-muted">Core system roles cannot be renamed.</small>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="role_sht_name" class="form-label">Short Name</label>
+                            <input type="text" class="form-control" id="role_sht_name" name="role_sht_name" 
+                                   value="{{ role.role_sht_name }}" required {% if role.role_name in ['Admin', 'Teller'] %}readonly{% endif %}>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{{ url_for('admin_roles') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+ -->

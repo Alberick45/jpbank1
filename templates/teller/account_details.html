@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Account Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('customer_accounts') }}">Accounts</a></li>
+                    <li class="breadcrumb-item active">Account Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Account Information Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Account Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">Account Number</label>
+                        <p class="h5">{{ account.acc_account_number }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted">Account Type</label>
+                        <p><span class="badge bg-primary">{{ account.acc_account_type }}</span></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted">Current Balance</label>
+                        <p class="h4 text-{% if account.acc_balance >= 0 %}success{% else %}danger{% endif %}">
+                            ${{ "%.2f"|format(account.acc_balance) }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user me-2"></i>Customer Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">Name</label>
+                        <p class="h5">{{ account.cus_firstname }} {{ account.cus_lastname }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted">Email</label>
+                        <p>{{ account.cus_email }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted">Phone</label>
+                        <p>{{ account.cus_phone_nos }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('new_transaction') }}?account={{ account.acc_account_number }}&type=deposit" 
+                           class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>New Deposit
+                        </a>
+                        <a href="{{ url_for('new_transaction') }}?account={{ account.acc_account_number }}&type=withdrawal" 
+                           class="btn btn-warning">
+                            <i class="fas fa-minus me-2"></i>New Withdrawal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Transactions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Processed By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.tst_transaction_id }}</td>
+                                    <td>
+                                        <span class="badge {% if transaction.tst_transaction_type == 'deposit' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ transaction.tst_transaction_type }}
+                                        </span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(transaction.tst_amount) }}</td>
+                                    <td>{{ transaction.tst_created_on.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ transaction.tst_created_by_user_id }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

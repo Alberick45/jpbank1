@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Accounts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-users me-2"></i>Customer Accounts</h2>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Account Number</th>
+                            <th>Customer Name</th>
+                            <th>Account Type</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td>{{ account.acc_account_number }}</td>
+                            <td>{{ account.cus_firstname }} {{ account.cus_lastname }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ account.acc_account_type }}</span>
+                            </td>
+                            <td>${{ "%.2f"|format(account.acc_balance) }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('account_details_teller', account_number=account.acc_account_number) }}" 
+                                       class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('new_transaction') }}?account={{ account.acc_account_number }}" 
+                                       class="btn btn-outline-success" title="New Transaction">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

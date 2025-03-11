@@ -38,13 +38,17 @@
                             <td>{{ user.usr_end_date.strftime('%Y-%m-%d') if user.usr_end_date else '' }}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" title="Edit">
+                                    <a href="{{ url_for('edit_user', user_id=user.usr_idpk) }}" class="btn btn-outline-primary" title="Edit">
                                         <i class="fas fa-edit"></i>
-                                    </button>
+                                    </a>
                                     {% if not user.role or user.role.role_name != 'Admin' %}
-                                    <button class="btn btn-outline-danger" title="Deactivate">
-                                        <i class="fas fa-user-slash"></i>
-                                    </button>
+                                    <form action="{{ url_for('toggle_user', user_id=user.usr_idpk) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-{% if user.usr_end_date %}success{% else %}danger{% endif %}" 
+                                                title="{% if user.usr_end_date %}Activate{% else %}Deactivate{% endif %}"
+                                                onclick="return confirm('Are you sure you want to {% if user.usr_end_date %}activate{% else %}deactivate{% endif %} this user?')">
+                                            <i class="fas fa-{% if user.usr_end_date %}user-check{% else %}user-slash{% endif %}"></i>
+                                        </button>
+                                    </form>
                                     {% endif %}
                                 </div>
                             </td>
