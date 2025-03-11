@@ -1,12 +1,27 @@
-{% extends "base.html" %}
+<!-- templates/profile.html -->
+{% extends 'base.html' %}
+
 {% block content %}
 <div class="container mt-4">
-    <h2>My Profile</h2>
+    <h2>User Profile</h2>
     <div class="card">
         <div class="card-body">
-            <h5>Account Information</h5>
-            <p>Username: {{ current_user.username }}</p>
-            <p>Email: {{ current_user.email }}</p>
+            <!-- User Section -->
+            <h5 class="card-title">Account Information</h5>
+            <p><strong>Username:</strong> {{ user.usr_username }}</p>
+            <p><strong>Email:</strong> {{ user.usr_email }}</p>
+            <p><strong>Role:</strong> {{ role.role_name if role else 'N/A' }}</p>
+
+            <!-- Employee Section -->
+            {% if employee %}
+            <h5 class="card-title mt-4">Employee Details</h5>
+            <p><strong>Name:</strong> {{ employee.emp_firstname }} {{ employee.emp_lastname }}</p>
+            <p><strong>Phone:</strong> {{ employee.emp_phone_nos }}</p>
+            <p><strong>Job Title ID:</strong> {{ employee.emp_job_title_idfk }}</p>
+            <p><strong>Loyalty Points:</strong> {{ employee.emp_loyalty_point }}</p>
+            {% else %}
+            <p class="text-muted">No employee record found.</p>
+            {% endif %}
         </div>
     </div>
 </div>

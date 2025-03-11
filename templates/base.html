@@ -62,6 +62,21 @@
                         </ul>
                     </li>
                     {% endif %}
+                    {% if current_user.role and current_user.role.role_name == 'Accountant' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="accountantDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-shield me-1"></i>Accountant Panel
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('accountant_dashboard') }}">
+                                <i class="fas fa-users me-2"></i>Account Dashboard
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('new_customer') }}">
+                                <i class="fas fa-user-tag me-2"></i>New Customer
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
                 {% if current_user.is_authenticated %}

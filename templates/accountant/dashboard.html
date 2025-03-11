@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Accountant Dashboard</h2>
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{{ url_for('new_customer') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Add New Customer
+            </a>
+        </div>
+    </div>
+    <!-- Other accountant features can go here -->
+</div>
+{% endblock %}

@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import scoped_session, sessionmaker
 from decimal import Decimal
 from models import Base, TblUsers086, TblEmployees086, TblUserRoles086, TblCustomers086, TblAccountDetails086, TblTransactions086, TblSecurityLogs086
+from functools import wraps
 
 load_dotenv()
 
@@ -177,7 +178,7 @@ def teller_transactions():
     transactions = db.query(TblTransactions086).all()
     return render_template('transactions.html', transactions=transactions)
 
-@app.route('/teller/transaction/new', methods=['GET', 'POST'])
+@app.route('/new_transaction', methods=['GET', 'POST'])
 @login_required
 @role_required('Teller')
 def new_transaction():
@@ -319,26 +320,70 @@ def edit_user(user_id):
     user = db.query(TblUsers086).filter_by(usr_idpk=user_id).first()
     if not user:
         abort(404)
-        
+    
     if request.method == 'POST':
         try:
             user.usr_username = request.form['username']
-            user.usr_roleidfk = int(request.form['role'])
-            user.usr_empidfk = int(request.form['employee'])
-            
-            if request.form.get('password'):
-                user.usr_password = generate_password_hash(request.form['password'])
-                
+            user.usr_roleidfk = int(request.form['role_id'])
+            user.usr_edited_on = datetime.utcnow()
             db.commit()
-            flash('User updated successfully.', 'success')
-            return redirect(url_for('admin_users'))
+            flash('User updated successfully', 'success')
+            return redirect(url_for('manage_users'))
         except Exception as e:
             db.rollback()
-            flash('Error updating user. Please try again.', 'danger')
-            
+            flash(f'Update failed: {str(e)}', 'danger')
+    
     roles = db.query(TblUserRoles086).all()
-    employees = db.query(TblEmployees086).all()
-    return render_template('admin/edit_user.html', user=user, roles=roles, employees=employees)
+    return render_template('admin/edit_user.html', user=user, roles=roles)
+
+
+#accountant
+
+@app.route('/accountant')
+@login_required
+@role_required('Accountant')
+def accountant_dashboard():
+    # Get customers for the dashboard
+    customers = db.query(TblCustomers086).all()
+    return render_template('accountant/dashboard.html', customers=customers)
+
+def role_required(role_name):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                return redirect(url_for('login'))
+            
+            user = db.query(TblUsers086).filter_by(usr_idpk=current_user.usr_idpk).first()
+            role = db.query(TblUserRoles086).filter_by(role_id=user.usr_roleidfk).first()
+            
+            if role.role_name != role_name:
+                flash(f'Access denied. {role_name} role required.', 'danger')
+                return redirect(url_for('dashboard'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+@app.route('/new_customer', methods=['GET', 'POST'])
+@login_required
+@role_required('Accountant')
+def new_customer():
+    if request.method == 'POST':
+        customer = TblCustomers086(
+            cus_firstname=request.form['firstname'],
+            cus_lastname=request.form['lastname'],
+            cus_othernames=request.form['othernames'],
+            cus_dob=datetime.strptime(request.form['dob'], '%Y-%m-%d'),
+            cus_email=request.form['email'],
+            cus_phone_nos=request.form['phone'],
+            cus_address=request.form['address']
+        )
+        db.add(customer)
+        db.commit()
+        flash('Customer added successfully', 'success')
+        return redirect(url_for('customers'))
+    return render_template('new_customer.html')
+
 
 @app.route('/admin/user/toggle/<int:user_id>', methods=['POST'])
 @login_required
@@ -352,11 +397,11 @@ def toggle_user(user_id):
         user.usr_is_active = not user.usr_is_active
         db.commit()
         status = "activated" if user.usr_is_active else "deactivated"
+        db.commit()
         flash(f'User {status} successfully.', 'success')
     except Exception as e:
         db.rollback()
         flash('Error toggling user status. Please try again.', 'danger')
-        
     return redirect(url_for('admin_users'))
 
 # Admin Role Management Routes
@@ -400,10 +445,10 @@ def edit_role():
 @app.route('/profile')
 @login_required
 def profile():
-    user = User.query.get(current_user.usr_idpk)
+    user = db.query(TblUsers086).filter_by(usr_idpk=current_user.usr_idpk).first()
     employee = None
     if user.usr_empidfk:
-        employee = TblEmployees086.query.get(user.usr_empidfk)
+        employee = db.query(TblEmployees086).filter_by(emp_idpk=user.usr_empidfk).first()
     return render_template('profile.html', user=user, employee=employee)
 
 
